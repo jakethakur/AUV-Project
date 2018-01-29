@@ -1,10 +1,11 @@
-//an application of the Haversine formula, in order to calculate the distance between two longitude and latitudes
 //https://www.movable-type.co.uk/scripts/latlong.html
 
-//returns answer in metres
-
-function haversine(lat1, long1, lat2, long2) {
-  var R = 6371e3; // radius of the Earth, in metres
+function distance(lat1, long1, lat2, long2) { //find distance between two lat-long pairs
+  //an application of the Haversine formula
+  
+  //returns answer in metres
+  
+  var R = 6371e3; //radius of the Earth, in metres (change to km for answer to be in km, etc)
 
   var lat1Radians = toRadians(lat1);
   var lat2Radians = toRadians(lat2);
@@ -22,8 +23,24 @@ function haversine(lat1, long1, lat2, long2) {
   return d;
 }
 
-function toRadians(degrees) {
+function distanceAlternative(lat1, long1, lat2, long2) { //find distance between two lat-long pairs (alternate, more obvious method)
+  //an application of the cosine rule
+  
+  //returns answer in metres
+  
+  var R = 6371e3; //radius of the Earth, in metres (change to km for answer to be in km, etc)
+
+  var lat1Radians = toRadians(lat1);
+  var lat2Radians = toRadians(lat2);
+  
+  var deltaLong = toRadians(long2-long1);
+  
+  var d = Math.acos( Math.sin(lat1Radians) * Math.sin(lat2Radians) + Math.cos(lat1Radians) * Math.cos(lat2Radians) * Math.cos(deltaLong) ) * R;
+}
+
+function toRadians(degrees) { //convert degrees to radians (js functions accept radians only)
   return degrees * Math.PI / 180;
 }
 
-console.log(haversine(36.12, -86.67, 33.94, -118.40));
+console.log(distance(36.12, -86.67, 33.94, -118.40));
+console.log(distanceAlternative(36.12, -86.67, 33.94, -118.40));
