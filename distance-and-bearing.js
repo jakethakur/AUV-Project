@@ -1,4 +1,4 @@
-//https://www.movable-type.co.uk/scripts/latlong.html
+//main reference: https://www.movable-type.co.uk/scripts/latlong.html
 
 function distance(lat1, long1, lat2, long2) { //find distance between two lat-long pairs
   //an application of the Haversine formula
@@ -23,7 +23,7 @@ function distance(lat1, long1, lat2, long2) { //find distance between two lat-lo
   return d;
 }
 
-function distanceAlternative(lat1, long1, lat2, long2) { //find distance between two lat-long pairs (alternate, more obvious method)
+function distanceAlternative(lat1, long1, lat2, long2) { //find distance between two lat-long pairs (alternate, easier method)
   //an application of the cosine rule
   
   //returns answer in metres
@@ -36,11 +36,30 @@ function distanceAlternative(lat1, long1, lat2, long2) { //find distance between
   var deltaLong = toRadians(long2-long1);
   
   var d = Math.acos( Math.sin(lat1Radians) * Math.sin(lat2Radians) + Math.cos(lat1Radians) * Math.cos(lat2Radians) * Math.cos(deltaLong) ) * R;
+
+  return d;
+}
+
+function bearing(lat1, long1, lat2, long2) { //find bearing between two lat-long pairs
+  //untested so far...
+  
+  //returns answer in radians (can easily be converted to degrees if necessary)
+  
+  var y = Math.sin(long2-long1) * Math.cos(lat2);
+  var x = Math.cos(lat1)*Math.sin(lat2) -
+          Math.sin(lat1)*Math.cos(lat2)*Math.cos(long2-long1);
+  
+  var bearing = Math.atan2(y, x);
+  
+  return bearing;
 }
 
 function toRadians(degrees) { //convert degrees to radians (js functions accept radians only)
   return degrees * Math.PI / 180;
 }
 
+//both functions are slightly different to eachother (by about 10^-9) - I would assume haversine is more accurate?
 console.log(distance(36.12, -86.67, 33.94, -118.40));
 console.log(distanceAlternative(36.12, -86.67, 33.94, -118.40));
+
+console.log(bearing(36.12, -86.67, 33.94, -118.40));
