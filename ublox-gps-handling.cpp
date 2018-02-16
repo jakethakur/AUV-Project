@@ -161,6 +161,4 @@ boolean getUBX_ACK(uint8_t *MSG) {
  
     }
   }
-}​
-
-
+}
