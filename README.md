@@ -1,2 +1,2 @@
-# ROV-Project
-Subsea 7 ROV competition
+# AUV-Project
+Subsea 7 AUV competition
