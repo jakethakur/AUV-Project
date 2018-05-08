@@ -12,10 +12,11 @@ void setup() {
 }
 void loop() {
   if (radio.available()) {
-    int long;
+    int longitude;
     int lat;
-    radio.read(&long, sizeof(long));
-    Serial.println(long);
+    radio.read(&longitude, sizeof(longitude));
+    Serial.println(longitude);
     radio.read(&lat, sizeof(lat));
+    Serial.println(lat);
   }
 }
