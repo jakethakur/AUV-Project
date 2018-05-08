@@ -14,6 +14,10 @@ void setup() {
 void loop() {
   const char longitude[] = "hello";
   const char lat[] = "world";
+  const char longitude[];
+  const char lat[];
+  longitude[] = Serial.readln();
+  lat[] = Serial.readln();
   radio.write(&longitude, sizeof(longitude));
   radio.write(&lat, sizeof(lat));
   delay(1000);
