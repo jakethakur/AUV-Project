@@ -1,3 +1,5 @@
+//https://howtomechatronics.com/tutorials/arduino/arduino-wireless-communication-nrf24l01-tutorial/
+
 #include <SPI.h>
 #include <nRF24L01.h>
 #include <RF24.h>
@@ -10,9 +12,9 @@ void setup() {
   radio.stopListening();
 }
 void loop() {
-  const int long;
-  const int lat;
-  radio.write(&long, sizeof(long));
+  const char longitude[] = "hello";
+  const char lat[] = "world";
+  radio.write(&longitude, sizeof(longitude));
   radio.write(&lat, sizeof(lat));
   delay(1000);
 }
