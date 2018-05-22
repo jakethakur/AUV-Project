@@ -1,11 +1,14 @@
+
 //main reference: https://www.movable-type.co.uk/scripts/latlong.html
-#include <math.h>
-#include <stdlib.h>
-using namespace std;
+//#include <math.h>
+//#include <stdlib.h>
+//using namespace std;
 
 void setup()  
 {
+  Serial.begin(9600);
   //both functions are slightly different to eachother (by about 10^-9) - I would assume haversine is more accurate?
+  
   Serial.println(distance(36.12, -86.67, 33.94, -118.40));
   Serial.println(distanceAlternative(36.12, -86.67, 33.94, -118.40));
   
@@ -74,4 +77,3 @@ double bearing(double lat1, double long1, double lat2, double long2) { //find be
 double toRadians(double degrees) { //convert degrees to radians (js functions accept radians only)
   return degrees * pi / 180;
 }
-
