@@ -12,13 +12,8 @@ void setup() {
   radio.stopListening();
 }
 void loop() {
-  const char longitude[] = "hello";
-  const char lat[] = "world";
-  const char longitude[];
-  const char lat[];
-  longitude[] = Serial.readln();
-  lat[] = Serial.readln();
-  radio.write(&longitude, sizeof(longitude));
-  radio.write(&lat, sizeof(lat));
+  const char text[] = "Hello World";
+  radio.write(&text, sizeof(text));
   delay(1000);
+}
 }
