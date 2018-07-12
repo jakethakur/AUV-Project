@@ -18,7 +18,7 @@ void moveForward(int distance) { // distance is in cm
 void turnRight(int rotation) { // rotation is in degrees
   digitalWrite(12, HIGH);
   digitalWrite(13, HIGH);
-  delay(rotation * 21.87);
+  delay(rotation * 11.72);
   digitalWrite(12, LOW);
   digitalWrite(13, LOW);
 }

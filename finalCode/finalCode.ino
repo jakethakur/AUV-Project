@@ -11,22 +11,29 @@
 SoftwareSerial mySerial(10, 11);
 TinyGPS gps;
 
-  long lat = 0;
-  long lon = 0;
-
 //51.36513, -0.18960
 
-  long destinationLat = 51.36513;
-  long destinationLon = -0.18960;
+  float destinationLat = 51.36513;
+  float destinationLon = -0.18960;
 
 void setup()  
 {
   // make the car face north!
 
   
+  
+  // Oploen serial communications and wait for port to open:
+  Serial.begin(9600);
   // set the data rate for the SoftwareSerial port
   mySerial.begin(9600);
-  Serial.println("hi");
+  delay(1000);
+  Serial.println("uBlox Neo 6M");
+  Serial.print("Testing TinyGPS library v. "); Serial.println(TinyGPS::library_version());
+  Serial.println("by Mikal Hart");
+  Serial.println();
+  Serial.print("Sizeof(gpsobject) = "); 
+  Serial.println(sizeof(TinyGPS));
+  Serial.println(); 
   
   pinMode(13, OUTPUT); // forward
   pinMode(12, OUTPUT); // right
@@ -35,31 +42,39 @@ void setup()
 }
 
 float latitude(TinyGPS &gps) {
-  long lat, lon;
-  unsigned long age;
-  gps.get_position(&lat, &lon, &age);
-  return lat;
+  float flat, flon;
+  gps.f_get_position(&flat, &flon);
+  Serial.println(flat);
+  return flat;
 }
 
 float longitude(TinyGPS &gps) {
-  long lat, lon;
-  unsigned long age;
-  gps.get_position(&lat, &lon, &age);
-  return lon;
+  float flat, flon;
+  gps.f_get_position(&flat, &flon);
+  Serial.println(flon);
+  return flon;
 }
 
-void longLat() {
-    if (mySerial.available()) 
-    
-    {
-      char c = mySerial.read();
-      if (gps.encode(c)) 
-      {
-        lat = longitude(gps);
-        lon = longitude(gps);
-      }
-    }
+
+
+
+
+
+// unused
+void gpsdump(TinyGPS &gps)
+{
+  float flat, flon;
+  gps.f_get_position(&flat, &flon);
+  Serial.print("Lat/Long(float): "); printFloat(flat, 5); Serial.print(", "); printFloat(flon, 5);
 }
+
+
+
+
+
+void printFloat(double f, int digits = 2);
+
+
 
 void printFloat(double number, int digits)
 {
@@ -95,6 +110,7 @@ void printFloat(double number, int digits)
     remainder -= toPrint;
   }
 }
+
 
 const double pi= 3.14159265358979;
 double distance(double lat1, double long1, double lat2, double long2) { //find distance between two lat-long pairs
@@ -137,7 +153,7 @@ double distanceAlternative(double lat1, double long1, double lat2, double long2)
   return d;
 }
 
-double bearing(double lat1, double long1, double lat2, double long2) { //find bearing between two lat-long pairs
+double bearing(float lat1, double long1, double lat2, double long2) { //find bearing between two lat-long pairs
   //untested so far...
   
   //returns answer in radians (can easily be converted to degrees if necessary)
@@ -156,7 +172,10 @@ double toRadians(double degrees) { //convert degrees to radians (cpp functions a
 }
 
 double toDegrees(double radian) {
-  return radian / pi * 180;
+  double degree = radian / pi * 180;
+  if ( degree < 0) {
+    degree += 360;
+  }
 }
 
 
@@ -176,14 +195,68 @@ void turnRight(int rotation) { // rotation is in degrees
 
 void loop() // run over and over
 {
+  /*
   longLat();
-  Serial.println(bearing(lat, lon, destinationLat, destinationLon));
-  Serial.println(distance(lat, lon, destinationLat, destinationLon));
+  Serial.println(lon);
+  Serial.println(lat);
   if (lat != 0) {
-    turnRight(bearing(lat, lon, destinationLat, destinationLon));
-    moveForward(distance(lat, lon, destinationLat, destinationLon));
+    //turnRight(bearing(lat, lon, destinationLat, destinationLon));
+    //moveForward(distance(lat, lon, destinationLat, destinationLon));
   }
 
   
-  delay(1000);
+  delay(1000);*/
+
+
+
+  
+  bool newdata = false;
+  unsigned long start = millis();
+  // Every 5 seconds we print an update
+  while (millis() - start < 5000) 
+  {
+    if (mySerial.available()) 
+    
+    {
+      char c = mySerial.read();
+      //Serial.print(c);  // uncomment to see raw GPS data
+      if (gps.encode(c)) 
+      {
+        newdata = true;
+      }
+    }
+  }
+  
+  if (newdata) 
+  {
+    float lat = latitude(gps);
+    float lon = longitude(gps);
+
+    destinationLat = lat + 0.00001;
+    destinationLon = lon + 0.00001;
+
+    Serial.println("--- New data ---");
+    
+    Serial.println("Current latitude: ");
+    printFloat(lat, 6);
+    Serial.println("Current longitude: ");
+    printFloat(lon, 6);
+
+    Serial.println("Destination latitude: ");
+    printFloat(destinationLat, 6);
+    Serial.println("Destination longitude: ");
+    printFloat(destinationLon, 6);
+
+    Serial.println("Bearing: ");
+    printFloat(bearing(lat, lon, destinationLat, destinationLon));
+    Serial.println("Distance: ");
+    printFloat(distance(lat, lon, destinationLat, destinationLon));
+    
+    turnRight(bearing(lat, lon, destinationLat, destinationLon));
+    moveForward(distance(lat, lon, destinationLat, destinationLon));
+
+    Serial.println("Destination reached.");
+    delay(1000);
+    Serial.print(" Recalculating...");
+  }
 }
