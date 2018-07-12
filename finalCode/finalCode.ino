@@ -13,8 +13,8 @@ TinyGPS gps;
 
 //51.36513, -0.18960
 
-  float destinationLat = 51.36513;
-  float destinationLon = -0.18960;
+  float destinationLat = 51.365173;
+  float destinationLon = -0.189486;
 
 void setup()  
 {
@@ -281,8 +281,8 @@ void loop() // run over and over
     float lat = latitude(gps);
     float lon = longitude(gps);
 
-    destinationLat = lat + 0.00001;
-    destinationLon = lon + 0.00001;
+    destinationLat = lat + 0;
+    destinationLon = lon + 100;
 
     Serial.println("--- New data ---");
     
@@ -308,8 +308,9 @@ void loop() // run over and over
     printFloat(distance(lat, lon, destinationLat, destinationLon));
     Serial.println("");
     
-    turnRight(bearing(lat, lon, destinationLat, destinationLon));
-    moveForward(distance(lat, lon, destinationLat, destinationLon));
+    turnRight(bearing(lat, lon, destinationLat, destinationLon) * 5);
+    delay(1000);
+    moveForward(distance(lat, lon, destinationLat, destinationLon) * 100);
 
     Serial.println("Destination reached.");
   }
