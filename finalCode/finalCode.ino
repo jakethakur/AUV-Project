@@ -44,14 +44,12 @@ void setup()
 float latitude(TinyGPS &gps) {
   float flat, flon;
   gps.f_get_position(&flat, &flon);
-  Serial.println(flat);
   return flat;
 }
 
 float longitude(TinyGPS &gps) {
   float flat, flon;
   gps.f_get_position(&flat, &flon);
-  Serial.println(flon);
   return flon;
 }
 
@@ -176,6 +174,7 @@ double toDegrees(double radian) {
   if ( degree < 0) {
     degree += 360;
   }
+  return degree;
 }
 
 
@@ -210,19 +209,24 @@ void loop() // run over and over
 
 
   
-  bool newdata = false;
+ /* bool newdata = false;
+
   unsigned long start = millis();
   // Every 5 seconds we print an update
+  
   while (millis() - start < 5000) 
   {
     if (mySerial.available()) 
     
     {
+      Serial.println("Calculating current GPS position...");
       char c = mySerial.read();
       //Serial.print(c);  // uncomment to see raw GPS data
       if (gps.encode(c)) 
       {
+        Serial.println("GPS data found.");
         newdata = true;
+        break;  // uncomment to print new data immediately!
       }
     }
   }
@@ -251,12 +255,64 @@ void loop() // run over and over
     printFloat(bearing(lat, lon, destinationLat, destinationLon));
     Serial.println("Distance: ");
     printFloat(distance(lat, lon, destinationLat, destinationLon));
+  }*/
+
+  bool newdata = false;
+  unsigned long start = millis();
+  while (millis() - start < 5000) 
+  {
+    if (mySerial.available()) 
+    
+    {
+      //Serial.println("Searching for GPS data...");
+      char c = mySerial.read();
+      //Serial.print(c);  // uncomment to see raw GPS data
+      if (gps.encode(c)) 
+      {
+        Serial.println("GPS data found.");
+        newdata = true;
+        break;  // uncomment to print new data immediately!
+      }
+    }
+  }
+  
+  if (newdata) 
+  {
+    float lat = latitude(gps);
+    float lon = longitude(gps);
+
+    destinationLat = lat + 0.00001;
+    destinationLon = lon + 0.00001;
+
+    Serial.println("--- New data ---");
+    
+    Serial.println("");
+    Serial.println("Current latitude: ");
+    printFloat(lat, 6);
+    Serial.println("");
+    Serial.println("Current longitude: ");
+    printFloat(lon, 6);
+
+    Serial.println("");
+    Serial.println("Destination latitude: ");
+    printFloat(destinationLat, 6);
+    Serial.println("");
+    Serial.println("Destination longitude: ");
+    printFloat(destinationLon, 6);
+
+    Serial.println("");
+    Serial.println("Bearing: ");
+    printFloat(bearing(lat, lon, destinationLat, destinationLon));
+    Serial.println("");
+    Serial.println("Distance: ");
+    printFloat(distance(lat, lon, destinationLat, destinationLon));
+    Serial.println("");
     
     turnRight(bearing(lat, lon, destinationLat, destinationLon));
     moveForward(distance(lat, lon, destinationLat, destinationLon));
 
     Serial.println("Destination reached.");
-    delay(1000);
-    Serial.print(" Recalculating...");
   }
+  delay(1000);
+  Serial.println(" Recalculating position...");
 }
