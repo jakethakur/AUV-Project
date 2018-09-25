@@ -32,24 +32,44 @@ void setup() {
   Serial.begin(9600);
 
   mag.initialize(); //Initializes the mag sensor
-  mag.start();      //Puts the sensor in active mode
 }
 
 void loop() {
 
   int x, y, z;
-  //Only read data when it's ready
-  if(mag.dataReady()) {
-    //Read the data
-    mag.readMag(&x, &y, &z);
-  
-    Serial.print("X: ");
-    Serial.print(x);
-    Serial.print(", Y: ");
-    Serial.print(y);
-    Serial.print(", Z: ");
-    Serial.println(z);
-  
-    Serial.println("--------");
+
+  if(!mag.isCalibrated()) //If we're not calibrated
+  {
+    if(!mag.isCalibrating()) //And we're not currently calibrating
+    {
+      Serial.println("Entering calibration mode");
+      mag.enterCalMode(); //This sets the output data rate to the highest possible and puts the mag sensor in active mode
+    }
+    else
+    {
+      //Must call every loop while calibrating to collect calibration data
+      //This will automatically exit calibration
+      //You can terminate calibration early by calling mag.exitCalMode();
+      mag.calibrate(); 
+    }
   }
+  else
+  {
+    Serial.println("Calibrated!");
+  }
+  mag.readMag(&x, &y, &z);
+
+  Serial.print("X: ");
+  Serial.print(x);
+  Serial.print(", Y: ");
+  Serial.print(y);
+  Serial.print(", Z: ");
+  Serial.println(z);
+
+  Serial.print("Heading: ");
+  Serial.println(mag.readHeading());
+
+  Serial.println("--------");
+
+  delay(100);
 }
