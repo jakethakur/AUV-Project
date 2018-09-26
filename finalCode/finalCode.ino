@@ -220,7 +220,7 @@ void turnRight(int lat, int lon, int destinationLat, int destinationLon) { // ro
   digitalWrite(12, HIGH);
   digitalWrite(13, HIGH);
   float currentHeading = mag.readHeading();
-  while(currentHeading < targetBearing - 15 || currentHeading > targetBearing + 15)
+  while(currentHeading < targetBearing - 7 || currentHeading > targetBearing + 7)
   {
     currentHeading = mag.readHeading();
   }
