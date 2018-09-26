@@ -99,7 +99,7 @@ void printFloat(double number, int digits)
 }
 
 // for converting between degrees and radians
-const double p i= 3.14159265358979;
+const double pi= 3.14159265358979;
 
 // find distance between two lat-long pairs
 double distance(double lat1, double long1, double lat2, double long2) {
@@ -168,8 +168,9 @@ void turnRight(int rotation) { // rotation is in degrees
   digitalWrite(13, LOW);
 }
 
-float readMagnetometerHeading() {
-  int x, y, z;
+void calibrateMag()
+{
+  
 
   if(!mag.isCalibrated()) //If we're not calibrated
   {
@@ -190,19 +191,25 @@ float readMagnetometerHeading() {
   {
     Serial.println("Calibrated!");
   }
+}
+
+float readMagnetometerHeading() {
+  int x, y, z;
   
   return mag.readHeading();
 }
 
 void loop() // run over and over
 {
-  // turn on motors for magnetometer calibration
-  digitalWrite(12, HIGH);
-  digitalWrite(13, HIGH);
-  
-  float magHeading = readMagnetometerHeading();
+  if(!mag.isCalibrated())
+  {
+    // turn on motors for magnetometer calibration
+    digitalWrite(12, HIGH);
+    digitalWrite(13, HIGH);
+    calibrateMag();
+  }
 
-  if (magHeading !== 0) { // check that the magnetometer is calibrated
+  else { // check that the magnetometer is calibrated
 
     // turn off motors from calibration
     digitalWrite(12, LOW);
@@ -210,12 +217,12 @@ void loop() // run over and over
     
     bool newdata = false;
     unsigned long start = millis();
-    while (millis() - start < 5000)  // every 5 seconds we print an update
+    while (millis() - start < 5000) 
     {
       if (mySerial.available()) 
       
       {
-        Serial.println("Searching for GPS data...");
+        //Serial.println("Searching for GPS data...");
         char c = mySerial.read();
         //Serial.print(c);  // uncomment to see raw GPS data
         if (gps.encode(c)) 
@@ -226,11 +233,13 @@ void loop() // run over and over
         }
       }
     }
-    
+      
     if (newdata) 
     {
       float lat = latitude(gps);
       float lon = longitude(gps);
+  
+      float magHeading = readMagnetometerHeading();
 
       // face approximately north (perhaps should be less approximate in the future
       digitalWrite(12, HIGH);
