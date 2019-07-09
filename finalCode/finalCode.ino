@@ -9,14 +9,27 @@
 #include <TinyGPS.h>
 #include <SparkFun_MAG3110.h>
 
+  /*
+   *  PIN GLOBAL VARIABLES
+   *  If directionPinLeft is high and driectionPinRight is low the car steering column will turn left
+   *  If directionPinRight is high and directionPinLeft is low the car steering column will turn right
+   */
+   const int directionPinLeft = 11;
+   const int directionPinRight = 12;
+   const int drivePinForward = 13;
+   const int gpsPinRx = 9;
+   const int gpsPinTx = 10;
+
 MAG3110 mag = MAG3110(); //Instantiate MAG3110
-SoftwareSerial mySerial(10, 11);
+SoftwareSerial mySerial(gpsPinRx, gpsPinTx);
 TinyGPS gps;
 
 //51.36513, -0.18960
 
   float destinationLat = 51.364501;
   float destinationLon = -0.189784;
+
+
 
 void setup()  
 {
@@ -37,8 +50,9 @@ void setup()
   Serial.println(sizeof(TinyGPS));
   Serial.println(); 
   
-  pinMode(13, OUTPUT); // forward
-  pinMode(12, OUTPUT); // right
+  pinMode(drivePinForward, OUTPUT); // forward
+  pinMode(directionPinRight, OUTPUT); // right
+  pinMode(directionPinLeft, OUTPUT); // right
 
   mag.initialize(); //Initializes the mag sensor
   
@@ -58,10 +72,6 @@ float longitude(TinyGPS &gps) {
 }
 
 
-
-
-
-
 // unused
 void gpsdump(TinyGPS &gps)
 {
@@ -69,8 +79,6 @@ void gpsdump(TinyGPS &gps)
   gps.f_get_position(&flat, &flon);
   Serial.print("Lat/Long(float): "); printFloat(flat, 5); Serial.print(", "); printFloat(flon, 5);
 }
-
-
 
 
 
@@ -156,9 +164,7 @@ double distanceAlternative(double lat1, double long1, double lat2, double long2)
 }
 
 double bearing(float lat1, double long1, double lat2, double long2) { //find bearing between two lat-long pairs
-  //untested so far...
-  
-  //returns answer in radians (can easily be converted to degrees if necessary)
+   //returns answer in radians (can easily be converted to degrees if necessary)
   
   double y = sin(long2-long1) * cos(lat2);
   double x = cos(lat1)*sin(lat2) -
@@ -205,27 +211,49 @@ double toDegrees(double radian) {
 
 
 void moveForward(int distance) { // distance is in cm
-  digitalWrite(13, HIGH);
-  delay(distance * 9.32);
-  digitalWrite(13, LOW);
+  digitalWrite(drivePinForward, HIGH);
+  delay(distance * 9.32); //Scaling constant
+  digitalWrite(drivePinForward, LOW);
 }
 
-void turnRight(int lat, int lon, int destinationLat, int destinationLon) { // rotation is in degrees
+void turn(int lat, int lon, int destinationLat, int destinationLon) { // rotation is in degrees
   
   float targetBearing = bearing(lat, lon, destinationLat, destinationLon);
-  if (targetBearing>180)
+  if (targetBearing>180)//magnetometer only returns values between -180 and 180
   {
     targetBearing = targetBearing-360;
   }
-  digitalWrite(12, HIGH);
-  digitalWrite(13, HIGH);
-  float currentHeading = mag.readHeading();
-  while(currentHeading < targetBearing - 7 || currentHeading > targetBearing + 7)
-  {
+
+  float currentHeading = mag.readHeading(); //take a reading from the magnetometer
+  if(targetBearing-currentHeading <=180){ //if the target bearing is closest to being clockwise from the car turn right
+  //turn car right and drive forward until the bearing matches the target bearing
+    digitalWrite(directionPinRight, HIGH); //Right high and left low will turn the steering column right
+    digitalWrite(directionPinLeft, LOW);
+    digitalWrite(drivePinForward, HIGH); //drive the car forward
     currentHeading = mag.readHeading();
+    while(currentHeading < targetBearing - 7 || currentHeading > targetBearing + 7)//if the car pointing outside +- 7 degrees of target bearing
+    {
+      currentHeading = mag.readHeading(); //keep turning while reading current heading
+    }
+    digitalWrite(directionPinRight, LOW); //stop the car
+    digitalWrite(directionPinLeft, LOW);
+    digitalWrite(drivePinForward, LOW);
   }
-  digitalWrite(12, LOW);
-  digitalWrite(13, LOW);
+
+  if(targetBearing-currentHeading >180){ //if the target bearing is closest to being anticlockwise from the car turn left
+  //turn car left and drive forward until the bearing matches the target bearing
+    digitalWrite(directionPinRight, LOW); //Left high and right low will turn the steering column left
+    digitalWrite(directionPinLeft, HIGH);
+    digitalWrite(drivePinForward, HIGH); //drive the car forward
+    currentHeading = mag.readHeading();
+    while(currentHeading < targetBearing - 7 || currentHeading > targetBearing + 7)//if the car pointing outside +- 7 degrees of target bearing
+    {
+      currentHeading = mag.readHeading(); //keep turning while reading current heading
+    }
+    digitalWrite(directionPinRight, LOW); //stop the car
+    digitalWrite(directionPinLeft, LOW);
+    digitalWrite(drivePinForward, LOW);
+  }
 }
 
 void loop() // run over and over
@@ -302,7 +330,7 @@ void loop() // run over and over
       printFloat(distance(lat, lon, destinationLat, destinationLon));
       Serial.println("");
       
-      turnRight(lat, lon, destinationLat, destinationLon);
+      turn(lat, lon, destinationLat, destinationLon);
       delay(1000);
       moveForward(distance(lat, lon, destinationLat, destinationLon) * 100);
   
